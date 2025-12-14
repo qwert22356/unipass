@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UniPass OAuth 示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+    
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .login-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: white;
+    }
+    
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    
+    .login-btn:active {
+      transform: translateY(0);
+    }
+    
+    .btn-wechat { background: #09bb07; }
+    .btn-qq { background: #12b7f5; }
+    .btn-douyin { background: #000; }
+    .btn-dingtalk { background: #0089ff; }
+    .btn-weibo { background: #e6162d; }
+    
+    .icon {
+      width: 24px;
+      height: 24px;
+    }
+    
+    .result {
+      margin-top: 30px;
+      padding: 20px;
+      border-radius: 8px;
+      display: none;
+    }
+    
+    .result.success {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      display: block;
+    }
+    
+    .result.error {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+      display: block;
+    }
+    
+    .result h3 {
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+    
+    .result p {
+      margin: 5px 0;
+      font-size: 14px;
+    }
+    
+    .result code {
+      background: rgba(0,0,0,0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      word-break: break-all;
+    }
+    
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      color: #999;
+      font-size: 12px;
+    }
+    
+    .config {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    
+    .config label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .config input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 UniPass OAuth</h1>
+    <p class="subtitle">选择一个平台登录</p>
+    
+    <div class="config">
+      <label for="worker-url">Worker URL:</label>
+      <input type="text" id="worker-url" value="https://unipass-oauth-gateway.your-subdomain.workers.dev" placeholder="输入你的 Worker URL">
+      
+      <label for="app-id">App ID:</label>
+      <input type="text" id="app-id" value="test-app-001" placeholder="输入你的 App ID">
+    </div>
+    
+    <div class="btn-group">
+      <button class="login-btn btn-wechat" onclick="login('wechat')">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8.5 11c-.83 0-1.5-.67-1.5-1.5S7.67 8 8.5 8s1.5.67 1.5 1.5S9.33 11 8.5 11zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 8 15.5 8s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.29.02-.58.05-.86 2.36-1.05 4.23-2.98 5.21-5.37C11.07 8.33 14.05 10 17.42 10c.78 0 1.53-.09 2.25-.26.21.71.33 1.47.33 2.26 0 4.41-3.59 8-8 8z"/>
+        </svg>
+        微信登录
+      </button>
+      
+      <button class="login-btn btn-qq" onclick="login('qq')">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z"/>
+        </svg>
+        QQ 登录
+      </button>
+      
+      <button class="login-btn btn-douyin" onclick="login('douyin')">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M11,16.5L18,12L11,7.5V16.5Z"/>
+        </svg>
+        抖音登录
+      </button>
+      
+      <button class="login-btn btn-dingtalk" onclick="login('dingtalk')">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M7.07,18.28C7.5,17.38 10.12,16.5 12,16.5C13.88,16.5 16.5,17.38 16.93,18.28C15.57,19.36 13.86,20 12,20C10.14,20 8.43,19.36 7.07,18.28M18.36,16.83C16.93,15.09 13.46,14.5 12,14.5C10.54,14.5 7.07,15.09 5.64,16.83C4.62,15.5 4,13.82 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,13.82 19.38,15.5 18.36,16.83M12,6C10.06,6 8.5,7.56 8.5,9.5C8.5,11.44 10.06,13 12,13C13.94,13 15.5,11.44 15.5,9.5C15.5,7.56 13.94,6 12,6M12,11A1.5,1.5 0 0,1 10.5,9.5A1.5,1.5 0 0,1 12,8A1.5,1.5 0 0,1 13.5,9.5A1.5,1.5 0 0,1 12,11Z"/>
+        </svg>
+        钉钉登录
+      </button>
+      
+      <button class="login-btn btn-weibo" onclick="login('weibo')">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,2C6.5,2 2,6.5 2,12C2,17.5 6.5,22 12,22C17.5,22 22,17.5 22,12C22,6.5 17.5,2 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20Z"/>
+        </svg>
+        微博登录
+      </button>
+    </div>
+    
+    <div id="result" class="result"></div>
+    
+    <div class="footer">
+      Powered by UniPass OAuth Gateway
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // 配置
+    function getWorkerUrl() {
+      return document.getElementById('worker-url').value;
+    }
+    
+    function getAppId() {
+      return document.getElementById('app-id').value;
+    }
+    
+    // 发起登录
+    function login(provider) {
+      const workerUrl = getWorkerUrl();
+      const appId = getAppId();
+      const redirect = window.location.pathname;
+      
+      const loginUrl = `${workerUrl}/auth/login?app_id=${appId}&provider=${provider}&redirect=${encodeURIComponent(redirect)}`;
+      
+      console.log('Redirecting to:', loginUrl);
+      window.location.href = loginUrl;
+    }
+    
+    // 检查回调参数
+    function checkCallback() {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+      const error = params.get('error');
+      const errorDescription = params.get('error_description');
+      
+      const resultDiv = document.getElementById('result');
+      
+      if (token) {
+        resultDiv.className = 'result success';
+        resultDiv.innerHTML = `
+          <h3>✅ 登录成功！</h3>
+          <p><strong>Access Token:</strong></p>
+          <p><code>${token.substring(0, 50)}...</code></p>
+          <p style="margin-top: 10px;">你现在可以使用这个 token 来访问 Supabase API。</p>
+        `;
+        
+        // 清除 URL 参数
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // 可选：初始化 Supabase 客户端
+        // initSupabase(token);
+      } else if (error) {
+        resultDiv.className = 'result error';
+        resultDiv.innerHTML = `
+          <h3>❌ 登录失败</h3>
+          <p><strong>错误代码:</strong> ${error}</p>
+          ${errorDescription ? `<p><strong>错误描述:</strong> ${errorDescription}</p>` : ''}
+          <p style="margin-top: 10px;">请检查配置或重试。</p>
+        `;
+      }
+    }
+    
+    // 初始化 Supabase（可选）
+    function initSupabase(token) {
+      // 替换为你的应用的 Supabase URL
+      const supabaseUrl = 'https://your-app.supabase.co';
+      const supabaseAnonKey = 'your-anon-key';
+      
+      const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+      
+      // 设置 session
+      supabase.auth.setSession({
+        access_token: token,
+        refresh_token: token
+      }).then(({ data, error }) => {
+        if (error) {
+          console.error('Supabase session error:', error);
+        } else {
+          console.log('Supabase session initialized:', data);
+          // 现在可以使用 Supabase 客户端了
+        }
+      });
+    }
+    
+    // 页面加载时检查回调
+    window.addEventListener('DOMContentLoaded', checkCallback);
+  </script>
+</body>
+</html>

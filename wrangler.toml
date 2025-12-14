@@ -1,0 +1,24 @@
+name = "unipass-oauth-gateway"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+# KV Namespace bindings
+# 运行以下命令创建 KV:
+# wrangler kv:namespace create "APP_CACHE"
+# wrangler kv:namespace create "APP_CACHE" --preview
+kv_namespaces = [
+  { binding = "APP_CACHE", id = "de7e1322098e4939afc24ae58d42ea8a", preview_id = "92a14d995eb04674b8cfac77677dd8fb" }
+]
+
+# Environment variables
+[vars]
+WORKER_ENV = "production"
+LOG_LEVEL = "info"
+
+# Secrets (use: wrangler secret put <NAME>)
+# MASTER_SUPABASE_URL - Your master Supabase project URL
+# MASTER_SUPABASE_ANON_KEY - Your master Supabase anon/service_role key
+
+
+[dev]
+port = 8787

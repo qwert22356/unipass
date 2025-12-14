@@ -1,0 +1,31 @@
+{
+  "name": "unipass-oauth-gateway",
+  "version": "1.0.0",
+  "description": "Multi-tenant OAuth Gateway for Chinese Social Platforms (WeChat, QQ, Douyin, DingTalk, Weibo)",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "kv:create": "wrangler kv:namespace create APP_CACHE && wrangler kv:namespace create APP_CACHE --preview"
+  },
+  "keywords": [
+    "oauth",
+    "wechat",
+    "qq",
+    "douyin",
+    "dingtalk",
+    "cloudflare",
+    "workers",
+    "saas",
+    "multi-tenant"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20231218.0",
+    "typescript": "^5.3.3",
+    "wrangler": "^3.22.0"
+  }
+}
