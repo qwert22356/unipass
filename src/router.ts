@@ -200,35 +200,58 @@ export async function handleCallback(request: Request, env: Env, logger: Logger)
     
     logger.info(`User authenticated: ${normalizedUser.provider}:${normalizedUser.openid}`);
     
-    // Create/get user in Supabase
+    // ✅ 使用 Supabase Admin API 生成 magic link
     const supabaseClient = new SupabaseClient(
       appConfig.supabase_url,
       appConfig.supabase_service_role
     );
 
-    logger.info(`Attempting to create/get user in Supabase...`);
-    logger.info(`Normalized user data:`, JSON.stringify(normalizedUser, null, 2));
+    // 构造唯一的 email
+    const email = `${normalizedUser.provider}_${normalizedUser.unionid || normalizedUser.openid}@oauth.fake`;
     
-    const { user, token } = await supabaseClient.getOrCreateUser(normalizedUser);
+    logger.info(`Generating magic link for: ${email}`);
     
-    logger.info(`User session created: user_id=${user.id}`);
+    // 调用 generateLink
+    const linkResponse = await supabaseClient.fetch('/auth/v1/admin/generate_link', {
+      method: 'POST',
+      body: JSON.stringify({
+        type: 'magiclink',
+        email: email,
+        options: {
+          redirectTo: `${appConfig.frontend_base_url}${redirectPath}`
+        }
+      })
+    });
+
+    if (!linkResponse.ok) {
+      const errorText = await linkResponse.text();
+      logger.error('[UniPass] generateLink failed:', errorText);
+      return createErrorResponse(
+        ERRORS.USER_CREATE_FAILED,
+        'Failed to generate auth link',
+        500
+      );
+    }
+
+    const linkData = await linkResponse.json() as any;
+
+    if (!linkData.action_link) {
+      logger.error('[UniPass] No action_link in response:', JSON.stringify(linkData));
+      return createErrorResponse(
+        ERRORS.USER_CREATE_FAILED,
+        'Invalid auth link response',
+        500
+      );
+    }
     
     // ✅ INCREMENT USAGE - Only after successful OAuth
     const developerId = appConfig.developer_id;
     await incrementUsage(env, developerId);
     logger.info(`Usage incremented for developer ${developerId}`);
     
-    // ✅ 重定向到开发者前端，携带用户信息
-    const redirectUrl = new URL(redirectPath, appConfig.frontend_base_url);
-    redirectUrl.searchParams.set('provider', providerName);
-    redirectUrl.searchParams.set('user_id', user.id);
-    redirectUrl.searchParams.set('openid', normalizedUser.openid);
-    redirectUrl.searchParams.set('nickname', normalizedUser.nickname || '');
-    redirectUrl.searchParams.set('avatar', normalizedUser.avatar || '');
-
-    logger.info(`Redirecting to: ${redirectUrl.toString()}`);
-
-    return Response.redirect(redirectUrl.toString(), 302);
+    // ✅ 302 跳转到 magic link，由 Supabase 自动建立 session
+    logger.info('[UniPass] Redirecting to magic link');
+    return Response.redirect(linkData.action_link, 302);
     
   } catch (error: any) {
     logger.error('OAuth callback error:', error);
